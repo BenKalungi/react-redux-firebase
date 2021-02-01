@@ -188,7 +188,6 @@ const populates = [
 const enhance = compose(
   firebaseConnect([
    { path: '/todos', populates }
-   // '/todos#populate=owner:users:email' // equivalent string notation
   ]),
   connect(
     ({ firebase }) => ({
@@ -205,6 +204,7 @@ ASDF123: {
   text: 'Some Todo Item',
   owner: "Iq5b0qK2NtgggT6U3bU6iZRGyma2",
   ownerObj: {
+    displayName: "Morty Smith",
     email: 'mortysmith@gmail.com',
   }
 }
@@ -243,11 +243,12 @@ ASDF123: {
 ```
 
 ## Profile Parameters
-To Populate parameters within profile/user object, include the `profileParamsToPopulate` parameter when [calling `reactReduxFirebase` in your compose function](/api/compose).
+To Populate parameters within profile/user object, include the `profileParamsToPopulate` parameter within your react-redux-firebase config.
 
 ### Parameter
 
 ##### Example Config
+
 Populating username with username from usernames ref.
 
 ```javascript
@@ -332,4 +333,27 @@ const config = {
     }
   }
 }
+```
+
+### Use with Firestore
+
+To use populate with Firestore, just replace firebaseConnect with firestoreConnect with the corresponding charaters.
+
+```javascript
+import { firestoreConnect, populate } from 'react-redux-firebase';
+
+const populates = [
+  { child: 'owner', root: 'users', childAlias: 'ownerObj' }
+]
+
+const enhance = compose(
+  firestoreConnect([
+    { collection: 'todos', populates }
+  ]),
+  connect(
+    ({ firebase }) => ({
+      todos: populate(firebase, 'todos', populates),
+    })
+  )
+)
 ```

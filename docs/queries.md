@@ -13,13 +13,15 @@ Queries can be created manually by using `watchEvent` or `watchEvents`. This is 
 
 ```jsx
 import React from 'react'
-import { connect } from 'react-redux'
-import { compose } from 'redux'
-import { withFirebase } from 'react-redux-firebase'
+import { useSelector } from 'react-redux'
+import { useFirebase } from 'react-redux-firebase'
 
 const todosPath = 'todos'
 
-function Todos ({ firebase, todos }) {
+export default function Todos() {
+  const firebase = useFirebase()
+  const todos = useSelector(state => state.firebase.data[todosPath])
+
   return (
     <div>
       <h1>Todos</h1>
@@ -32,14 +34,6 @@ function Todos ({ firebase, todos }) {
     </div>
   )
 }
-
-export default compose(
-  withFirebase,
-  connect((state) => ({
-    todos: state.firebase.data[todosPath],
-    // todos: state.firebase.ordered[todosPath] // for ordered data (array)
-  }))
-)(Todos)
 ```
 
 Though doing things manually is great to understand what is going on, it comes with the need to manage these listeners yourself.
@@ -57,11 +51,15 @@ By default the results of queries are stored in redux under the path of the quer
 
 ```jsx
 import React from 'react'
-import { connect } from 'react-redux'
-import { compose } from 'redux'
-import { firebaseConnect } from 'react-redux-firebase'
+import { useSelector } from 'react-redux'
+import { useFirebaseConnect } from 'react-redux-firebase'
 
-function Todos ({ firebase, todos }) {
+export default function Todos () {
+  useFirebaseConnect([
+    { path: 'todos' }
+  ])
+  const todos = useSelector(state => state.firebase.ordered.todos)
+
   return (
     <div>
       <h1>Todos</h1>
@@ -71,17 +69,6 @@ function Todos ({ firebase, todos }) {
     </div>
   )
 }
-
-const enhance = compose(
-  firebaseConnect((props) => [
-    { path: 'todos' }
-  ]),
-  connect((state, props) => ({
-    todos: state.firebase.data.todos
-  }))
-)
-
-export default enhance(Todos)
 ```
 
 **NOTE:**
@@ -95,18 +82,59 @@ The `isLoaded` utility is helpful in checking to see if data has loaded. Check l
 ```jsx
 import React from 'react'
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
+import { compose } from 'redux'
+import { useFirebaseConnect, isLoaded, isEmpty } from 'react-redux-firebase'
+
+export default function Todos() {
+  // Attach listener for todos in Real Time Database
+  useFirebaseConnect([
+    { path: 'todos' }
+  ])
+  // Get todos from redux state
+  const todos = useSelector(state => state.firebase.ordered.todos)
+
+  // Show message while todos are loading
+  if (!isLoaded(todos)) {
+    return <div>Loading...</div>
+  }
+
+  // Show message if there are no todos
+  if (isEmpty(todos)) {
+    return <div>Todos List Is Empty</div>
+  }
+
+  return (
+    <div>
+      <h1>Todos</h1>
+      <div>
+        {JSON.stringify(todos, null, 2)}
+      </div>
+    </div>
+  )
+}
+```
+
+##### Using HOCs {#loadingHOCs}
+
+```jsx
+import React from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { firebaseConnect, isLoaded, isEmpty } from 'react-redux-firebase'
 
 function Todos({ firebase, todos }) {
-  // Build Todos list if todos exist and are loaded
+  // Show message while todos are loading
   if (!isLoaded(todos)) {
     return <div>Loading...</div>
   }
+
+  // Show message if there are no todos
   if (isEmpty(todos)) {
     return <div>Todos List Is Empty</div>
   }
+
   return (
     <div>
       <h1>Todos</h1>
@@ -129,7 +157,7 @@ const enhance = compose(
 export default enhance(Todos)
 ```
 
-##### Functional Approach Using Recompose {#loadingHOCs}
+##### Custom Loading HOC {#customLoadingHOC}
 
 Using [`recompose`](https://github.com/acdlite/recompose) is a nice way to keep your react code clean and functional. Useful Higher Order Components are offered such as `branch` (similar to the `if` statements from the last example) making for much cleaner construction of your own HOCs:
 
@@ -258,7 +286,7 @@ Query parameters can be passed through the `queryParams` parameter if using obje
 #### orderByChild
 To order the query by a child within each object, use orderByChild.
 
-**Internally Uses Firebase Method**: [ `orderByChild`](https://firebase.google.com/docs/reference/js/firebase.database.Query#orderByChild)
+**Internally Uses Firebase Method**: [ `orderByChild`](https://firebase.google.com/docs/reference/js/firebase.database.Query#order-bychild)
 
 ##### Example
 Ordering a list of todos by the text parameter of the todo item (placing them in alphabetical order).
@@ -340,7 +368,7 @@ Limit query results to the first n number of results.
 
   ```javascript
   firebaseConnect([
-    { path: '/todos', queryParams: [ 'orderByChild=createdBy', 'equalTo=123' ] }
+    { path: '/todos', queryParams: [ 'limitToFirst=10'] }
     // '/todos#limitToFirst=10' // string notation
   ])
   ```
@@ -473,7 +501,7 @@ firebaseConnect([
 
 #### parsed {#parsed}
 
-Internally parse following query params. Useful when attempting to parse
+Internally parse following query params. Useful when attempting to parse query parameters into the actual value or particular data type ( e.g. null, number, boolean) instead of the string containing the value.
 
 **NOTE**: `orderByChild`, `orderByPriority`, and `orderByValue` will cause this to be enabled by default. Parsing will remain enabled for the rest of the query params until `notParsed` is called.
 

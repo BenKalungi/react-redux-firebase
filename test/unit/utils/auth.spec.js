@@ -13,11 +13,34 @@ describe('Utils: Auth', () => {
         getLoginMethodAndParams(firebase, { provider: 'google' })
       ).to.include.keys('method')
     })
+    it('microsoft.com provider', () => {
+      expect(
+        getLoginMethodAndParams(firebase, { provider: 'microsoft.com' })
+      ).to.include.keys('method')
+    })
 
     it('twitter provider', () => {
       // TODO: Confirm that addScope
       expect(
         getLoginMethodAndParams(firebase, { provider: 'twitter' })
+      ).to.include.keys('method')
+    })
+
+    it('github provider', () => {
+      expect(
+        getLoginMethodAndParams(firebase, { provider: 'github' })
+      ).to.include.keys('method')
+    })
+
+    it('apple.com provider', () => {
+      expect(
+        getLoginMethodAndParams(firebase, { provider: 'apple.com' })
+      ).to.include.keys('method')
+    })
+
+    it('yahoo.com provider', () => {
+      expect(
+        getLoginMethodAndParams(firebase, { provider: 'yahoo.com' })
       ).to.include.keys('method')
     })
 
@@ -79,7 +102,7 @@ describe('Utils: Auth', () => {
     it('throws if path is not defined', () => {
       expect(() => setupPresence(() => {}, firebase)).to.Throw(
         Error,
-        `Reference.child failed: First argument was an invalid path = "null". Paths must be non-empty strings and can't contain ".", "#", "$", "[", or "]"`
+        `Reference.child failed: First argument was an invalid path = "undefined". Paths must be non-empty strings and can't contain ".", "#", "$", "[", or "]"`
       )
     })
 

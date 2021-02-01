@@ -4,7 +4,7 @@ Control/management of access through setting and assigning user roles and permis
 
 Though there are many patterns, we are going to use the following terminology:
 
-**Role** - job function or title which defines authority level (i.e. admin or manager). A user has a role, a role as permissions.
+**Role** - job function or title which defines authority level (i.e. admin or manager). A user has a role, a role has permissions.
 
 **Permissions** - approval of a mode of access (i.e. todos) . Multiple permissions can be assigned to a single role.
 
@@ -50,62 +50,84 @@ Each user should have a role parameter that correlates to a role. For example:
 
 In order for us to check our role for permissions, we will want to populate the role on a profile. This will turn the role string (i.e. admin) into the object representing that role from the roles collection.
 
-Make sure you have the following config when creating your store:
-
 ```js
-reactReduxFirebase(
-  fbConfig,
-  {
-    userProfile: 'users',
-    profileParamsToPopulate: [
-      { child: 'role', root: 'roles' }, // populates user's role with matching role object from roles
-    ]
-  }
-)
+{
+  userProfile: 'users',
+  profileParamsToPopulate: [
+    { child: 'role', root: 'roles' }, // populates user's role with matching role object from roles
+  ]
+}
 ```
 
-You can also use string notation for the profileParamsToPopulate, like so:
+You can also use string notation for the `profileParamsToPopulate`, like so:
 
 ```js
-reactReduxFirebase(
-  fbConfig,
-  {
-    userProfile: 'users',
-    profileParamsToPopulate: [
-      ['role:roles'], // populates user's role with matching role object from roles
-    ]
-  }
-)
+{
+  userProfile: 'users',
+  profileParamsToPopulate: [
+    ['role:roles'], // populates user's role with matching role object from roles
+  ]
+}
 ```
 
 **Note:** beware that the `role` parameter on each user will remain a string, and won't be "converted" into an object. Something that may be apparent to some developers, but not to others ;-)
 
 ## Automatically assign role when user signs up
 
-If you want to assign a role by default when users sign up, you can add a profileFactory to your config:+
+### Client Side
+
+If you want to assign a role by default when users sign up, you can add a profileFactory to your config:
 
 ```js
-reactReduxFirebase(
-  fbConfig,
-  {
-    userProfile: 'users',
-    profileParamsToPopulate: [
-      { child: 'role', root: 'roles' }, // populates user's role with matching role object from roles
-    ],
-    profileFactory: user => ({
+{
+  userProfile: 'users',
+  profileParamsToPopulate: [
+    { child: 'role', root: 'roles' }, // populates user's role with matching role object from roles
+  ],
+  profileFactory: user => {
+    const profile = {
       email: user.email || user.providerData[0].email,
       role: 'user',
-      providerData: user.providerData
-    })
+    }
+    if (user.providerData && user.providerData.length) {
+      profile.providerData = user.providerData
+    }
+    return profile
   }
-)
+}
 ```
+
+**NOTE**: Your security rules should be set to only allow for users to be setting their role to user. For more granular control of this, you can move role assigning to a cloud function that is trigger on user create
+
+### Cloud Function
+
+Having cloud function contain logic about which users get assigned certain roles means that you do not need any write access for clients on the role parameter.
+
+```js
+const adminEmails = ['your@email.com'] // list of emails to automatically assign admin role to
+
+async function assignUserRole(user) {
+  const { uid, email, displayName } = user // The email of the user.
+  const newRole = adminEmails.includes(email) ? 'admin' : 'user'
+  await admin
+    .firestore()
+    .collection('users')
+    .doc(uid)
+    .set({ role: 'user' }, { merge: true })
+}
+
+exports.assignUserRole = functions.auth.user().onCreate(assignUserRole)
+```
+
+More info is available about doing this in the [extend auth with functions section of the firebase docs](https://firebase.google.com/docs/auth/extend-with-functions).
 
 ## The higher order component (where the actual verification happens)
 
 Using redux-auth-wrapper you can create higher order components that will make it easy to verify a user has a specific role or permission before rendering a page or component.
 
 Here is an example of an HOC that checks to make sure the user is an admin:
+
+**redux-auth-wrapper v1**
 
 ```js
 import { get } from 'lodash';
@@ -133,6 +155,34 @@ export const UserIsAdmin = UserAuthWrapper({ // eslint-disable-line new-cap
   predicate: auth => get(auth, `profile.role.name`) === 'admin',
   LoadingComponent: <CircularProgress mode="indeterminate" size={80} />,
 });
+```
+
+**react-router v4 + redux-auth-wrapper v2**
+
+```js
+import locationHelperBuilder from 'redux-auth-wrapper/history4/locationHelper'
+import { connectedRouterRedirect } from 'redux-auth-wrapper/history4/redirect'
+import createHistory from 'history/createBrowserHistory'
+import LoadingScreen from '../components/LoadingScreen' // change to your custom component
+
+const locationHelper = locationHelperBuilder({})
+const browserHistory = createHistory()
+
+export const UserIsAdmin = connectedRouterRedirect({
+  wrapperDisplayName: 'UserIsAuthenticated',
+  LoadingComponent: LoadingScreen,
+  allowRedirectBack: false,
+  redirectPath: (state, ownProps) =>
+    locationHelper.getRedirectQueryParam(ownProps) || '/',
+  authenticatingSelector: ({ firebase: { auth, profile, isInitializing } }) =>
+    !auth.isLoaded || !profile.isLoaded || isInitializing === true,
+  authenticatedSelector: ({ firebase: { profile } }) =>
+    profile.role.name === 'admin',
+  redirectAction: newLoc => dispatch => {
+    browserHistory.replace(newLoc)
+    dispatch({ type: UNAUTHED_REDIRECT })
+  }
+})
 ```
 
 Here is an example of a UserHasPermission HOC that allows us to pass in a string permission (such as todos):
@@ -172,29 +222,30 @@ export const UserHasPermission = permission => UserAuthWrapper({
 **react-router v4 + redux-auth-wrapper v2**
 
 ```javascript
-import locationHelperBuilder from 'redux-auth-wrapper/history4/locationHelper';
-import { browserHistory } from 'react-router';
-import LoadingScreen from '../components/LoadingScreen'; // change it to your custom component
+import locationHelperBuilder from 'redux-auth-wrapper/history4/locationHelper'
+import { browserHistory } from 'react-router'
+import LoadingScreen from '../components/LoadingScreen' // change it to your custom component
+import { connectedRouterRedirect } from 'redux-auth-wrapper/history4/redirect'
 
-const locationHelper = locationHelperBuilder({});
+const locationHelper = locationHelperBuilder({})
 
-export const UserHasPermission = permission => UserAuthWrapper({
-  wrapperDisplayName: 'UserHasPermission',
-  AuthenticatingComponent: LoadingScreen,
-  allowRedirectBack: false,
-  redirectPath: (state, ownProps) =>
-    locationHelper.getRedirectQueryParam(ownProps) || '/login',
-  authenticatingSelector: ({ firebase: { auth, isInitializing } }) =>
-    !auth.isLoaded || !profile.isLoaded || isInitializing === true,
-  authenticatedSelector: ({ firebase: { auth } }) =>
-    auth.isLoaded && !auth.isEmpty,
-  redirectAction: newLoc => (dispatch) => {
-    browserHistory.replace(newLoc); // or routerActions.replace
-    dispatch({ type: UNAUTHED_REDIRECT });
-  }
-});
+export const UserHasPermission = permission =>
+  connectedRouterRedirect({
+    wrapperDisplayName: 'UserHasPermission',
+    AuthenticatingComponent: LoadingScreen,
+    allowRedirectBack: false,
+    redirectPath: (state, ownProps) =>
+      locationHelper.getRedirectQueryParam(ownProps) || '/login',
+    authenticatingSelector: ({ firebase: { auth, isInitializing } }) =>
+      !auth.isLoaded || !profile.isLoaded || isInitializing === true,
+    authenticatedSelector: ({ firebase: { auth } }) =>
+      auth.isLoaded && !auth.isEmpty,
+    redirectAction: newLoc => dispatch => {
+      browserHistory.replace(newLoc) // or routerActions.replace
+      dispatch({ type: UNAUTHED_REDIRECT })
+    }
+  })
 ```
-
 
 ## Checking for roles on pages/components
 

@@ -1,4 +1,4 @@
-import { map, isFunction } from 'lodash'
+import { map } from 'lodash'
 import { actionTypes } from '../constants'
 import { wrapInDispatch } from '../utils/actions'
 import {
@@ -17,34 +17,36 @@ const {
 } = actionTypes
 
 /**
- * @description Upload file to Firebase Storage with option to store
+ * Upload file to Firebase Storage with option to store
  * file metadata within Firebase Database
  * @param {Function} dispatch - Action dispatch function
- * @param {Object} firebase - Internal firebase object
- * @param {Object} config - Config object
- * @param {String} config.path - Location within Firebase Stroage at which to upload files.
+ * @param {object} firebase - Internal firebase object
+ * @param {object} config - Config object
+ * @param {string} config.path - Location within Firebase Stroage at which to upload files.
  * @param {Blob} config.file - File Blob to be uploaded
- * @param {String} config.dbPath - Datbase path to write file meta data to
- * @param {Object} config.options - Options
- * @param {String|Function} config.options.name - Name of file. If a function
+ * @param {string} config.dbPath - Datbase path to write file meta data to
+ * @param {object} config.options - Options
+ * @param {string|Function} config.options.name - Name of file. If a function
  * is provided it recieves (fileObject, internalFirebase, config) as arguments.
- * @param {String|Function} config.options.metdata - Metadata for file to be passed along
+ * @param {object} config.options.metdata - Metadata for file to be passed along
  * to storage.put calls
- * @return {Promise} Resolves with meta object
+ * @param {object} config.options.documentId - Id of document to update with metadata if using Firestore
+ * @returns {Promise} Resolves with meta object
  * @private
  */
-export const uploadFile = (dispatch, firebase, config) => {
+export function uploadFile(dispatch, firebase, config) {
   if (!firebase.storage) {
     throw new Error('Firebase storage is required to upload files')
   }
   const { path, file, dbPath, options = { progress: false } } = config || {}
-  const { metadata: fileMetadata } = options
+  const { metadata: fileMetadata } = options || {}
   const { logErrors } = firebase._.config
 
   // File renaming through options (supporting string and function)
-  const nameFromOptions = isFunction(options.name)
-    ? options.name(file, firebase, config)
-    : options.name
+  const nameFromOptions =
+    typeof options.name === 'function'
+      ? options.name(file, firebase, config)
+      : options.name
   const filename = nameFromOptions || file.name
 
   const meta = { ...config, filename }
@@ -61,13 +63,10 @@ export const uploadFile = (dispatch, firebase, config) => {
           meta,
           fileMetadata
         })
-      : firebase
-          .storage()
-          .ref(`${path}/${filename}`)
-          .put(file, fileMetadata)
+      : firebase.storage().ref(`${path}/${filename}`).put(file, fileMetadata)
 
   return uploadPromise()
-    .then(uploadTaskSnapshot => {
+    .then((uploadTaskSnapshot) => {
       if (!dbPath || (!firebase.database && !firebase.firestore)) {
         dispatch({
           type: FILE_UPLOAD_COMPLETE,
@@ -89,7 +88,7 @@ export const uploadFile = (dispatch, firebase, config) => {
         uploadTaskSnapshot,
         dbPath,
         options
-      }).then(payload => {
+      }).then((payload) => {
         dispatch({
           type: FILE_UPLOAD_COMPLETE,
           meta: { ...config, filename },
@@ -98,7 +97,7 @@ export const uploadFile = (dispatch, firebase, config) => {
         return payload
       })
     })
-    .catch(err => {
+    .catch((err) => {
       if (logErrors) {
         /* eslint-disable no-console */
         console.error &&
@@ -111,33 +110,37 @@ export const uploadFile = (dispatch, firebase, config) => {
 }
 
 /**
- * @description Upload multiple files to Firebase Storage with option to store
+ * Upload multiple files to Firebase Storage with option to store
  * file's metadata within Firebase Database
  * @param {Function} dispatch - Action dispatch function
- * @param {Object} firebase - Internal firebase object
- * @param {Object} opts - Options object
- * @param {String} opts.path - Storage path to write files to
+ * @param {object} firebase - Internal firebase object
+ * @param {object} opts - Options object
+ * @param {string} opts.path - Storage path to write files to
  * @param {Array} opts.files - List of files to be uploaded
- * @param {String} opts.dbPath - Datbase path to write file meta data to
+ * @param {string} opts.dbPath - Datbase path to write file meta data to
+ * @returns {Promise} Resolves with array of meta objects
  * @private
  */
-export const uploadFiles = (dispatch, firebase, { files, ...other }) =>
-  Promise.all(
-    map(files, file => uploadFile(dispatch, firebase, { file, ...other }))
+export function uploadFiles(dispatch, firebase, { files, ...other }) {
+  return Promise.all(
+    map(files, (file) => uploadFile(dispatch, firebase, { file, ...other }))
   )
+}
 
 /**
- * @description Delete File from Firebase Storage with option to remove meta
+ * Delete File from Firebase Storage with option to remove meta
  * @param {Function} dispatch - Action dispatch function
- * @param {Object} firebase - Internal firebase object
- * @param {Object} opts - Options object
- * @param {String} opts.path - Storage path to write files to
- * @param {String} opts.dbPath - Datbase path to write file meta data to
+ * @param {object} firebase - Internal firebase object
+ * @param {object} opts - Options object
+ * @param {string} opts.path - Storage path to write files to
+ * @param {string} opts.dbPath - Datbase path to write file meta data to
+ * @returns {Promise} Resolves with results of deleting a file from storage
  * @private
  */
-export const deleteFile = (dispatch, firebase, { path, dbPath }) =>
-  wrapInDispatch(dispatch, {
+export function deleteFile(dispatch, firebase, { path, dbPath }) {
+  return wrapInDispatch(dispatch, {
     method: deleteFileFromFb,
     args: [firebase, { path, dbPath }],
     types: [FILE_DELETE_START, FILE_DELETE_COMPLETE, FILE_DELETE_ERROR]
   })
+}

@@ -2,162 +2,219 @@
 
 ### Table of Contents
 
--   [set](#set)
--   [setWithMeta](#setwithmeta)
--   [push](#push)
--   [pushWithMeta](#pushwithmeta)
--   [update](#update)
--   [updateWithMeta](#updatewithmeta)
--   [remove](#remove)
--   [uniqueSet](#uniqueset)
--   [uploadFile](#uploadfile)
--   [uploadFiles](#uploadfiles)
--   [deleteFile](#deletefile)
--   [watchEvent](#watchevent)
--   [unWatchEvent](#unwatchevent)
--   [promiseEvents](#promiseevents)
--   [login](#login)
--   [logout](#logout)
--   [createUser](#createuser)
--   [resetPassword](#resetpassword)
--   [confirmPasswordReset](#confirmpasswordreset)
--   [verifyPasswordResetCode](#verifypasswordresetcode)
--   [updateProfile](#updateprofile)
--   [updateAuth](#updateauth)
--   [updateEmail](#updateemail)
--   [reloadAuth](#reloadauth)
--   [linkWithCredential](#linkwithcredential)
--   [signInWithPhoneNumber](#signinwithphonenumber)
--   [ref](#ref)
--   [database](#database)
--   [storage](#storage)
--   [auth](#auth)
+- [createFirebaseInstance][1]
+  - [Parameters][2]
+- [set][3]
+  - [Parameters][4]
+- [setWithMeta][5]
+  - [Parameters][6]
+- [push][7]
+  - [Parameters][8]
+  - [Examples][9]
+- [pushWithMeta][10]
+  - [Parameters][11]
+- [update][12]
+  - [Parameters][13]
+  - [Examples][14]
+- [updateWithMeta][15]
+  - [Parameters][16]
+- [remove][17]
+  - [Parameters][18]
+  - [Examples][19]
+- [uniqueSet][20]
+  - [Parameters][21]
+  - [Examples][22]
+- [uploadFile][23]
+  - [Parameters][24]
+- [uploadFiles][25]
+  - [Parameters][26]
+- [deleteFile][27]
+  - [Parameters][28]
+- [watchEvent][29]
+  - [Parameters][30]
+- [unWatchEvent][31]
+  - [Parameters][32]
+- [promiseEvents][33]
+  - [Parameters][34]
+- [login][35]
+  - [Parameters][36]
+- [reauthenticate][37]
+  - [Parameters][38]
+- [handleRedirectResult][39]
+  - [Parameters][40]
+- [logout][41]
+- [createUser][42]
+  - [Parameters][43]
+- [resetPassword][44]
+  - [Parameters][45]
+- [confirmPasswordReset][46]
+  - [Parameters][47]
+- [verifyPasswordResetCode][48]
+  - [Parameters][49]
+- [applyActionCode][50]
+  - [Parameters][51]
+- [updateProfile][52]
+  - [Parameters][53]
+- [updateAuth][54]
+  - [Parameters][55]
+- [updateEmail][56]
+  - [Parameters][57]
+- [reloadAuth][58]
+- [linkWithCredential][59]
+  - [Parameters][60]
+- [actionCreators][61]
+  - [Parameters][62]
+- [actionCreators][63]
+- [ref][64]
+- [database][65]
+- [storage][66]
+- [auth][67]
+- [getFirebase][68]
+  - [Examples][69]
+
+## createFirebaseInstance
+
+Create an extended firebase instance that has methods attached
+which dispatch redux actions.
+
+### Parameters
+
+- `firebase` **[object][70]** Firebase instance which to extend
+- `configs` **[object][70]** Configuration object
+- `dispatch` **[Function][71]** Action dispatch function
+
+Returns **[object][70]** Extended Firebase instance
 
 ## set
 
+    import React, { Component } from 'react'
+    import PropTypes from 'prop-types'
+    import { firebaseConnect } from 'react-redux-firebase'
+    function Example({ firebase: { set } }) {
+      return (
+        &lt;button onClick={() => set('some/path', { here: 'is a value' })}>
+        Set To Firebase
+        </button>
+      )
+    }
+    export default firebaseConnect()(Example)**
+
 Sets data to Firebase.
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set
--   `value` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean) \| [Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** Value to write to Firebase
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
+- `path` **[string][73]** Path to location on Firebase which to set
+- `value` **([object][70] \| [string][73] \| [boolean][74] \| [number][75])** Value to write to Firebase
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
 
-**Examples**
-
-_Basic_
-
-```javascript
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import { firebaseConnect } from 'react-redux-firebase'
-const Example = ({ firebase: { set } }) => (
-  <button onClick={() => set('some/path', { here: 'is a value' })}>
-    Set To Firebase
-  </button>
-)
-export default firebaseConnect()(Example)
-```
-
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## setWithMeta
 
 Sets data to Firebase along with meta data. Currently,
 this includes createdAt and createdBy. _Warning_ using this function
 may have unintented consequences (setting createdAt even if data already
-exists)
+exists).
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set
--   `value` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean) \| [Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** Value to write to Firebase
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
+- `path` **[string][73]** Path to location on Firebase which to set
+- `value` **([object][70] \| [string][73] \| [boolean][74] \| [number][75])** Value to write to Firebase
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## push
 
 Pushes data to Firebase.
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to push
--   `value` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean) \| [Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** Value to push to Firebase
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
+- `path` **[string][73]** Path to location on Firebase which to push
+- `value` **([object][70] \| [string][73] \| [boolean][74] \| [number][75])** Value to push to Firebase
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
 
-**Examples**
+### Examples
 
 _Basic_
 
 ```javascript
-import React, { Component } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { firebaseConnect } from 'react-redux-firebase'
-const Example = ({ firebase: { push } }) => (
-  <button onClick={() => push('some/path', true)}>
-    Push To Firebase
-  </button>
-)
+
+function Example({ firebase: { push } }) {
+  return (
+    <button onClick={() => push('some/path', true)}>Push To Firebase</button>
+  )
+}
 export default firebaseConnect()(Example)
 ```
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## pushWithMeta
 
 Pushes data to Firebase along with meta data. Currently,
 this includes createdAt and createdBy.
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set
--   `value` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean) \| [Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** Value to write to Firebase
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
+- `path` **[string][73]** Path to location on Firebase which to set
+- `value` **([object][70] \| [string][73] \| [boolean][74] \| [number][75])** Value to write to Firebase
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## update
 
-Updates data on Firebase and sends new data.
+Updates data on Firebase and sends new data. More info
+available in [the docs][77].
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to update
--   `value` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean) \| [Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** Value to update to Firebase
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
+- `path` **[string][73]** Path to location on Firebase which to update
+- `value` **([object][70] \| [string][73] \| [boolean][74] \| [number][75])** Value to update to Firebase
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
 
-**Examples**
+### Examples
 
 _Basic_
 
 ```javascript
-import React, { Component } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { firebaseConnect } from 'react-redux-firebase'
-const Example = ({ firebase: { update } }) => (
-  <button onClick={() => update('some/path', { here: 'is a value' })}>
-    Update To Firebase
-  </button>
-)
+
+function Example({ firebase: { update } }) {
+  function updateData() {
+    update('some/path', { here: 'is a value' })
+  }
+}
+  return (
+    <button onClick={updateData}>
+      Update To Firebase
+    </button>
+  )
+}
 export default firebaseConnect()(Example)
 ```
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## updateWithMeta
 
 Updates data on Firebase along with meta. _Warning_
 using this function may have unintented consequences (setting
-createdAt even if data already exists)
+createdAt even if data already exists).
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to update
--   `value` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean) \| [Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** Value to update to Firebase
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
+- `path` **[string][73]** Path to location on Firebase which to update
+- `value` **([object][70] \| [string][73] \| [boolean][74] \| [number][75])** Value to update to Firebase
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## remove
 
@@ -166,29 +223,30 @@ seperate action is not dispatched unless `dispatchRemoveAction: true` is
 provided to config on store creation. That means that a listener must
 be attached in order for state to be updated when calling remove.
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to remove
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
--   `options`  
+- `path` **[string][73]** Path to location on Firebase which to remove
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
+- `options` **[Function][71]** Options object
 
-**Examples**
+### Examples
 
 _Basic_
 
 ```javascript
-import React, { Component } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { firebaseConnect } from 'react-redux-firebase'
-const Example = ({ firebase: { remove } }) => (
-  <button onClick={() => remove('some/path')}>
-    Remove From Firebase
-  </button>
-)
+
+function Example({ firebase: { remove } }) {
+  return (
+    <button onClick={() => remove('some/path')}>Remove From Firebase</button>
+  )
+}
 export default firebaseConnect()(Example)
 ```
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## uniqueSet
 
@@ -196,13 +254,13 @@ Sets data to Firebase only if the path does not already
 exist, otherwise it rejects. Internally uses a Firebase transaction to
 prevent a race condition between seperate clients calling uniqueSet.
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set
--   `value` **([Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean) \| [Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))** Value to write to Firebase
--   `onComplete` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** Function to run on complete (`not required`)
+- `path` **[string][73]** Path to location on Firebase which to set
+- `value` **([object][70] \| [string][73] \| [boolean][74] \| [number][75])** Value to write to Firebase
+- `onComplete` **[Function][71]** Function to run on complete (`not required`)
 
-**Examples**
+### Examples
 
 _Basic_
 
@@ -210,75 +268,81 @@ _Basic_
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { firebaseConnect } from 'react-redux-firebase'
-const Example = ({ firebase: { uniqueSet } }) => (
-  <button onClick={() => uniqueSet('some/unique/path', true)}>
-    Unique Set To Firebase
-  </button>
-)
+
+function Example({ firebase: { uniqueSet } }) {
+  return (
+    <button onClick={() => uniqueSet('some/unique/path', true)}>
+      Unique Set To Firebase
+    </button>
+  )
+}
 export default firebaseConnect()(Example)
 ```
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing reference snapshot
+Returns **[Promise][76]** Containing reference snapshot
 
 ## uploadFile
 
 Upload a file to Firebase Storage with the option to store
-its metadata in Firebase Database
+its metadata in Firebase Database. More info available
+in [the docs][84].
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set
--   `file` **File** File object to upload (usually first element from
-    array output of select-file or a drag/drop `onDrop`)
--   `dbPath` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Database path to place uploaded file metadata
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options
-    -   `options.name` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Name of the file
+- `path` **[string][73]** Path to location on Firebase which to set
+- `file` **File** File object to upload (usually first element from
+  array output of select-file or a drag/drop `onDrop`)
+- `dbPath` **[string][73]** Database path to place uploaded file metadata
+- `options` **[object][70]** Options
+  - `options.name` **[string][73]** Name of the file
+  - `options.metdata` **[object][70]** Metadata for the file (passed as second
+    argument to storage.put calls)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing the File object
+Returns **[Promise][76]** Containing the File object
 
 ## uploadFiles
 
 Upload multiple files to Firebase Storage with the option
-to store their metadata in Firebase Database
+to store their metadata in Firebase Database.
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set
--   `files` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** Array of File objects to upload (usually from
-    a select-file or a drag/drop `onDrop`)
--   `dbPath` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Database path to place uploaded files metadata.
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options
-    -   `options.name` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Name of the file
+- `path` **[string][73]** Path to location on Firebase which to set
+- `files` **[Array][86]** Array of File objects to upload (usually from
+  a select-file or a drag/drop `onDrop`)
+- `dbPath` **[string][73]** Database path to place uploaded files metadata.
+- `options` **[object][70]** Options
+  - `options.name` **[string][73]** Name of the file
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing an array of File objects
+Returns **[Promise][76]** Containing an array of File objects
 
 ## deleteFile
 
 Delete a file from Firebase Storage with the option to
-remove its metadata in Firebase Database
+remove its metadata in Firebase Database.
 
-**Parameters**
+### Parameters
 
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set
--   `dbPath` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Database path to place uploaded file metadata
+- `path` **[string][73]** Path to location on Firebase which to set
+- `dbPath` **[string][73]** Database path to place uploaded file metadata
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing the File object
+Returns **[Promise][76]** Containing the File object
 
 ## watchEvent
 
 Watch event. **Note:** this method is used internally
 so examples have not yet been created, and it may not work as expected.
 
-**Parameters**
+### Parameters
 
--   `type` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of watch event
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to set listener
--   `storeAs` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Name of listener results within redux store
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Event options object (optional, default `{}`)
-    -   `options.queryParams` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** List of parameters for the query
-    -   `options.queryId` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** id of the query
+- `type` **[string][73]** Type of watch event
+- `path` **[string][73]** Path to location on Firebase which to set listener
+- `storeAs` **[string][73]** Name of listener results within redux store
+- `options` **[object][70]** Event options object (optional, default `{}`)
+  - `options.queryParams` **[Array][86]** List of parameters for the query
+  - `options.queryId` **[string][73]** id of the query
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **([Promise][76] | void)** Results of calling watch event
 
 ## unWatchEvent
 
@@ -286,14 +350,14 @@ Unset a listener watch event. **Note:** this method is used
 internally so examples have not yet been created, and it may not work
 as expected.
 
-**Parameters**
+### Parameters
 
--   `type` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of watch event
--   `path` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Path to location on Firebase which to unset listener
--   `queryId` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Id of the listener
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Event options object (optional, default `{}`)
+- `type` **[string][73]** Type of watch event
+- `path` **[string][73]** Path to location on Firebase which to unset listener
+- `queryId` **[string][73]** Id of the listener
+- `options` **[object][70]** Event options object (optional, default `{}`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **void**
 
 ## promiseEvents
 
@@ -303,39 +367,67 @@ your redux state without React, e.g., for server side rendering. Only
 `once` type should be used as other query types such as `value` do not
 return a Promise.
 
-**Parameters**
+### Parameters
 
--   `watchArray` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** Array of objects or strings for paths to sync
-    from Firebase. Can also be a function that returns the array. The function
-    is passed the props object specified as the next parameter.
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The options object that you would like to pass to
-    your watchArray generating function.
+- `watchArray` **[Array][86]** Array of objects or strings for paths to sync
+  from Firebase. Can also be a function that returns the array. The function
+  is passed the props object specified as the next parameter.
+- `options` **[object][70]** The options object that you would like to pass to
+  your watchArray generating function.
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Resolves with an array of watchEvent results
 
 ## login
 
 Logs user into Firebase. For examples, visit the
-[auth section](/docs/auth.md)
+[auth section of the docs][92] or the
+[auth recipes section][93].
 
-**Parameters**
+### Parameters
 
--   `credentials` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Credentials for authenticating
-    -   `credentials.provider` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** External provider (google |
-        facebook | twitter)
-    -   `credentials.type` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Type of external authentication
-        (popup | redirect) (only used with provider)
-    -   `credentials.email` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Credentials for authenticating
-    -   `credentials.password` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Credentials for authenticating (only used with email)
+- `credentials` **[object][70]** Credentials for authenticating
+  - `credentials.provider` **[string][73]** External provider (google |
+    facebook | twitter)
+  - `credentials.type` **[string][73]** Type of external authentication
+    (popup | redirect) (only used with provider)
+  - `credentials.email` **[string][73]** Credentials for authenticating
+  - `credentials.password` **[string][73]** Credentials for authenticating (only used with email)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing user's auth data
+Returns **[Promise][76]** Containing user's auth data
+
+## reauthenticate
+
+Reauthenticate user into Firebase. For examples, visit the
+[auth section of the docs][92] or the
+[auth recipes section][93].
+
+### Parameters
+
+- `credentials` **[object][70]** Credentials for authenticating
+  - `credentials.provider` **[string][73]** External provider (google |
+    facebook | twitter)
+  - `credentials.type` **[string][73]** Type of external authentication
+    (popup | redirect) (only used with provider)
+
+Returns **[Promise][76]** Containing user's auth data
+
+## handleRedirectResult
+
+Logs user into Firebase using external. For examples, visit the
+[auth section][94]
+
+### Parameters
+
+- `authData` **[object][70]** Auth data from Firebase's getRedirectResult
+
+Returns **[Promise][76]** Containing user's profile
 
 ## logout
 
 Logs user out of Firebase and empties firebase state from
 redux store
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Resolves after logout is complete
 
 ## createUser
 
@@ -343,124 +435,130 @@ Creates a new user in Firebase authentication. If
 `userProfile` config option is set, user profiles will be set to this
 location.
 
-**Parameters**
+### Parameters
 
--   `credentials` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Credentials for authenticating
-    -   `credentials.email` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Credentials for authenticating
-    -   `credentials.password` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Credentials for authenticating (only used with email)
--   `profile` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Data to include within new user profile
+- `credentials` **[object][70]** Credentials for authenticating
+  - `credentials.email` **[string][73]** Credentials for authenticating
+  - `credentials.password` **[string][73]** Credentials for authenticating (only used with email)
+- `profile` **[object][70]** Data to include within new user profile
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing user's auth data
+Returns **[Promise][76]** Containing user's auth data
 
 ## resetPassword
 
 Sends password reset email
 
-**Parameters**
+### Parameters
 
--   `credentials` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Credentials for authenticating
-    -   `credentials.email` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Credentials for authenticating
+- `email` **[string][73]** Email to send recovery email to
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Resolves after password reset email is sent
 
 ## confirmPasswordReset
 
 Confirm that a user's password has been reset
 
-**Parameters**
+### Parameters
 
--   `code` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Password reset code to verify
--   `password` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** New Password to confirm reset to
+- `code` **[string][73]** Password reset code to verify
+- `password` **[string][73]** New Password to confirm reset to
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Resolves after password reset is confirmed
 
 ## verifyPasswordResetCode
 
 Verify that a password reset code from a password reset
 email is valid
 
-**Parameters**
+### Parameters
 
--   `code` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Password reset code to verify
+- `code` **[string][73]** Password reset code to verify
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** Containing user auth info
+Returns **[Promise][76]** Containing user auth info
+
+## applyActionCode
+
+Apply verification code
+
+### Parameters
+
+- `code` **[string][73]** Verification code
+
+Returns **[Promise][76]** Resolves on success
 
 ## updateProfile
 
 Update user profile on Firebase Real Time Database or
-Firestore (if `useFirestoreForProfile: true` config passed to
-reactReduxFirebase). Real Time Database update uses `update` method
-internally while updating profile on Firestore uses `set` with
+Firestore (if `useFirestoreForProfile: true` config included).
+Real Time Database update uses `update` method internally while
+updating profile on Firestore uses `set`.
 
-**Parameters**
+### Parameters
 
--   `profileUpdate` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Profile data to place in new profile
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Options object (used to change how profile
-    update occurs)
-    -   `options.useSet` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Use set with merge instead of
-        update. Setting to `false` uses update (can cause issue of profile document
-        does not exist). Note: Only used when updating profile on Firestore (optional, default `true`)
-    -   `options.merge` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Whether or not to use merge when
-        setting profile. Note: Only used when updating profile on Firestore (optional, default `true`)
+- `profileUpdate` **[object][70]** Profile data to place in new profile
+- `options` **[object][70]** Options object (used to change how profile
+  update occurs)
+  - `options.useSet` **[boolean][74]** Use set with merge instead of
+    update. Setting to `false` uses update (can cause issue of profile document
+    does not exist). Note: Only used when updating profile on Firestore (optional, default `true`)
+  - `options.merge` **[boolean][74]** Whether or not to use merge when
+    setting profile. Note: Only used when updating profile on Firestore (optional, default `true`)
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Returns after updating profile within database
 
 ## updateAuth
 
-Update Auth Object
+Update Auth profile object
 
-**Parameters**
+### Parameters
 
--   `authUpdate` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** Update to be auth object
--   `updateInProfile` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Update in profile
+- `authUpdate` **[object][70]** Update to be auth object
+- `updateInProfile` **[boolean][74]** Update in profile
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Returns after updating auth profile
 
 ## updateEmail
 
 Update user's email
 
-**Parameters**
+### Parameters
 
--   `newEmail` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Update to be auth object
--   `updateInProfile` **[Boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Update in profile
+- `newEmail` **[string][73]** Update to be auth object
+- `updateInProfile` **[boolean][74]** Update in profile
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Resolves after email is updated in user's auth
 
 ## reloadAuth
 
 Reload user's auth object. Must be authenticated.
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Resolves after reloading firebase auth
 
 ## linkWithCredential
 
 Links the user account with the given credentials.
 
-**Parameters**
+### Parameters
 
--   `credential` **firebase.auth.AuthCredential** The auth credential
+- `credential` **firebase.auth.AuthCredential** The auth credential
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+Returns **[Promise][76]** Resolves after linking auth with a credential
 
-## signInWithPhoneNumber
+## actionCreators
 
-Asynchronously signs in using a phone number. This method
-sends a code via SMS to the given phone number, and returns a modified
-firebase.auth.ConfirmationResult. The `confirm` method
-authenticates and does profile handling.
+### Parameters
 
-**Parameters**
+- `credential` **firebase.auth.ConfirmationResult** The auth credential
 
--   `credential` **firebase.auth.ConfirmationResult** The auth credential
+Returns **[Promise][76]**
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)** 
+## actionCreators
 
 ## ref
 
 Firebase ref function
 
-Returns **firebase.database.Reference** 
+Returns **firebase.database.Reference**
 
 ## database
 
@@ -478,4 +576,154 @@ Returns **firebase.database.Storage** Firebase storage service
 
 Firebase auth service instance including all Firebase auth methods
 
-Returns **firebase.database.Auth** 
+Returns **firebase.database.Auth**
+
+## getFirebase
+
+Get internal Firebase instance with methods which are wrapped with action dispatches. Useful for
+integrations into external libraries such as redux-thunk and redux-observable.
+
+### Examples
+
+_redux-thunk integration_
+
+```javascript
+import { applyMiddleware, compose, createStore } from 'redux'
+import thunk from 'redux-thunk'
+import { getFirebase } from 'react-redux-firebase'
+import makeRootReducer from './reducers'
+
+const fbConfig = {} // your firebase config
+
+const store = createStore(
+  makeRootReducer(),
+  initialState,
+  compose(
+    applyMiddleware([
+      // Pass getFirebase function as extra argument
+      thunk.withExtraArgument(getFirebase)
+    ])
+  )
+)
+// then later
+export function addTodo(newTodo) {
+  return (dispatch, getState, getFirebase) => {
+    const firebase = getFirebase()
+    firebase.push('todos', newTodo).then(() => {
+      dispatch({ type: 'SOME_ACTION' })
+    })
+  }
+}
+```
+
+Returns **[object][70]** Firebase instance with methods which dispatch redux actions
+
+[1]: #createfirebaseinstance
+[2]: #parameters
+[3]: #set
+[4]: #parameters-1
+[5]: #setwithmeta
+[6]: #parameters-2
+[7]: #push
+[8]: #parameters-3
+[9]: #examples
+[10]: #pushwithmeta
+[11]: #parameters-4
+[12]: #update
+[13]: #parameters-5
+[14]: #examples-1
+[15]: #updatewithmeta
+[16]: #parameters-6
+[17]: #remove
+[18]: #parameters-7
+[19]: #examples-2
+[20]: #uniqueset
+[21]: #parameters-8
+[22]: #examples-3
+[23]: #uploadfile
+[24]: #parameters-9
+[25]: #uploadfiles
+[26]: #parameters-10
+[27]: #deletefile
+[28]: #parameters-11
+[29]: #watchevent
+[30]: #parameters-12
+[31]: #unwatchevent
+[32]: #parameters-13
+[33]: #promiseevents
+[34]: #parameters-14
+[35]: #login
+[36]: #parameters-15
+[37]: #reauthenticate
+[38]: #parameters-16
+[39]: #handleredirectresult
+[40]: #parameters-17
+[41]: #logout
+[42]: #createuser
+[43]: #parameters-18
+[44]: #resetpassword
+[45]: #parameters-19
+[46]: #confirmpasswordreset
+[47]: #parameters-20
+[48]: #verifypasswordresetcode
+[49]: #parameters-21
+[50]: #applyactioncode
+[51]: #parameters-22
+[52]: #updateprofile
+[53]: #parameters-23
+[54]: #updateauth
+[55]: #parameters-24
+[56]: #updateemail
+[57]: #parameters-25
+[58]: #reloadauth
+[59]: #linkwithcredential
+[60]: #parameters-26
+[61]: #actioncreators
+[62]: #parameters-27
+[63]: #actioncreators-1
+[64]: #ref
+[65]: #database
+[66]: #storage
+[67]: #auth
+[68]: #getfirebase
+[69]: #examples-4
+[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[71]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[72]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#set
+[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[75]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[77]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#update
+[78]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#push
+[79]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#pushwithmeta
+[80]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#updatewithmeta
+[81]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#remove
+[82]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#uniqueset
+[83]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#uploadfile
+
+[84]: <>
+
+[85]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#uploadfiles
+[86]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[87]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#deletefile
+[88]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#watchevent
+[89]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#unwatchevent
+[90]: https://react-redux-firebase.com/docs/auth.html#logincredentials
+[91]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#login
+[92]: https://react-redux-firebase.com/docs/auth.html
+[93]: https://react-redux-firebase.com/docs/recipes/auth.html
+[94]: /docs/recipes/auth.md
+[95]: https://react-redux-firebase.com/docs/auth.html#logout
+[96]: https://react-redux-firebase.com/docs/auth.html#createuser
+[97]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#resetpassword
+[98]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#confirmpasswordreset
+[99]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#verifypasswordreset
+[100]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#applyactioncode
+[101]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#updateprofile
+[102]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#updateauth
+[103]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#updateemail
+[104]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#reloadauth
+[105]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#linkwithcredential
+[106]: https://react-redux-firebase.com/docs/api/firebaseInstance.html#signinwithphonenumber
+[107]: http://react-redux-firebase.com/api/getFirebase.html

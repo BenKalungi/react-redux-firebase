@@ -1,51 +1,44 @@
 # Redux Saga Recipes
 
-In order to use `react-redux-firebase` instance within sagas, pass it as the second argument of the run function `sagaMiddleware.run(helloSaga, getFirebase)`.
-
 ### Example
 
 ```javascript
 import { applyMiddleware, compose, createStore } from 'redux'
 import { browserHistory } from 'react-router'
-import { reactReduxFirebase, getFirebase } from 'react-redux-firebase'
 import makeRootReducer from './reducers'
 import createSagaMiddleware from 'redux-saga'
-import firebase from 'firebase/app';
+import firebase from 'firebase/app'
+import 'firebase/database'
 
 const firebaseConfig = {} // firebase configuration including databaseURL
 const reduxFirebase = {
-  userProfile: 'users',
-  enableLogging: 'false'
+  userProfile: 'users'
 }
 
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig)
 
-function* helloSaga(getFirebase) {
+function* helloSaga() {
   try {
-    yield getFirebase().push('/some/path', { nice: 'work!' })
-  } catch(err) {
+    yield firebase.ref('/some/path').push({ nice: 'work!' })
+  } catch (err) {
     console.log('Error in saga!:', err)
   }
 }
 
 export default (initialState = {}, history) => {
-
   const sagaMiddleware = createSagaMiddleware() // create middleware
 
-  const middleware = [ sagaMiddleware ]
+  const middleware = [sagaMiddleware]
 
   const store = createStore(
     makeRootReducer(),
     {}, // initial state
-    compose(
-      reactReduxFirebase(firebase, reduxConfig),
-      applyMiddleware(...middleware)
-    )
+    compose(applyMiddleware(...middleware))
   )
 
   return store
 }
 
-// when calling saga, pass getFirebase
-sagaMiddleware.run(helloSaga, getFirebase)
+// when calling saga
+sagaMiddleware.run(helloSaga)
 ```

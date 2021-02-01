@@ -3,17 +3,53 @@
 Profile object is used to store data associated with a user. Using profile is in no way required, and will only be enabled if the `userProfile` config option is provided.
 
 ## Basic
+
 It is common to store the list of user profiles under a collection called "users" or "profiles". For this example we will use "users".
 
-Include the `userProfile` parameter in config when setting up store enhancer:
+Include the `userProfile` parameter in config passed to react-redux-firebase:
 
 ```js
 const config = {
-  userProfile: 'users', // where profiles are stored in database
+  userProfile: 'users' // where profiles are stored in database
 }
-// During store creation
-reactReduxFirebase(fbConfig, config)
 ```
+
+Make sure to set your database rules to work with user profiles being stored under the `users` path of Real Time Database:
+
+```json
+{
+  "rules": {
+    "users": {
+      "$userId": {
+        ".read": "$userId === auth.uid",
+        ".write": "$userId === auth.uid"
+      }
+    }
+  }
+}
+```
+
+### Get Profile From State
+
+#### Using useSelector Hook
+
+Then later `connect` (from [react-redux](https://github.com/reactjs/react-redux/blob/master/docs/api.md)) to redux state with:
+
+```js
+import { useSelector } from 'react-redux'
+
+function SomeComponent() {
+  const profile = useSelector((state) => state.firebase.profile)
+  return <div>{JSON.stringify(profile, null, 2)}</div>
+}
+
+function SomeComponent() {
+  const profile = useSelector(({ firebase: { profile } }) => profile)
+  return <div>{JSON.stringify(profile, null, 2)}</div>
+}
+```
+
+#### Using connect HOC
 
 Then later `connect` (from [react-redux](https://github.com/reactjs/react-redux/blob/master/docs/api.md)) to redux state with:
 
@@ -21,16 +57,38 @@ Then later `connect` (from [react-redux](https://github.com/reactjs/react-redux/
 import { connect } from 'react-redux'
 
 // grab profile from redux with connect
-connect(
-  (state) => {
-    return {
-      profile: state.firebase.profile // profile passed as props.profile
-    }
+connect((state) => {
+  return {
+    profile: state.firebase.profile // profile passed as props.profile
   }
-)(SomeComponent) // pass component to be wrapped
+})(SomeComponent) // pass component to be wrapped
 
 // or with some shorthand:
 connect(({ firebase: { profile } }) => ({ profile }))(SomeComponent)
+```
+
+## Profile in Firestore
+
+To use Firestore for storing profile data instead of Real Time Database, the basic example can be followed exactly with the following config.
+
+```js
+const config = {
+  userProfile: 'users', // where profiles are stored in database
+  useFirestoreForProfile: true // use Firestore for profile instead of RTDB
+}
+```
+
+Make sure to set your firestore rules to work with user profiles being stored under the `users` collection of Firestore:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+  }
+}
 ```
 
 ## Update Profile
@@ -41,50 +99,40 @@ The current users profile can be updated by using the `updateProfile` method:
 import React from 'react'
 import PropTypes from 'prop-types'
 import { compose } from 'redux'
-import { connect } from 'react-redux'
-import { withFirebase, isLoaded } from 'react-redux-firebase'
+import { useSelector } from 'react-redux'
+import { useFirebase, isLoaded } from 'react-redux-firebase'
 
-const UpdateProfilePage = ({ profile, firebase }) => (
-  <div>
-    <h2>Update User Profile</h2>
-    <span>
-      Click the button to update profile to include role parameter
-    </span>
-    <button onClick={() => firebase.updateProfile({ role: 'admin' })}>
-      Add Role To User
-    </button>
+export default function UpdateProfilePage() {
+  const firebase = useFirebase()
+  const profile = useSelector((state) => state.firebase.profile)
+
+  function updateUserProfile() {
+    return firebase.updateProfile({ role: 'admin' })
+  }
+
+  return (
     <div>
-      {
-        isLoaded(profile)
-          ? JSON.stringify(profile, null, 2)
-          : 'Loading...'
-      }
+      <h2>Update User Profile</h2>
+      <span>Click the button to update profile to include role parameter</span>
+      <button onClick={updateUserProfile}>Add Role To User</button>
+      <div>
+        {isLoaded(profile) ? JSON.stringify(profile, null, 2) : 'Loading...'}
+      </div>
     </div>
-  </div>
-)
-
-UpdateProfilePage.propTypes = {
- profile: PropTypes.object,
-}
-
-export default compose(
-  withFirebase, // add props.firebase (firebaseConnect() can also be used)
-  connect(
-    ({ firebase: { profile } }) => ({
-      profile
-    })
   )
-)(UpdateProfilePage)
+}
 ```
 
 ## Change How Profiles Are Stored
+
 The way user profiles are written to the database can be modified by passing the `profileFactory` parameter .
 
 ```js
 // within your createStore.js or store.js file include the following config
 const config = {
   userProfile: 'users', // where profiles are stored in database
-  profileFactory: (userData, profileData) => { // how profiles are stored in database
+  profileFactory: (userData, profileData, firebase) => {
+    // how profiles are stored in database
     const { user } = userData
     return {
       email: user.email
@@ -93,15 +141,20 @@ const config = {
 }
 ```
 
+This also works with profiles stored on Firestore if using the `useFirestoreForProfile` option
+
 ## List Online Users
 
 To list online users and/or track sessions, view the [presence recipe](/docs/recipes/auth.md#presence)
 
 ## Populate Parameters
+
 If profile object contains an key or a list of keys as parameters, you can populate those parameters with the matching value from another location on firebase.
 
 #### List
-profile.contacts contains a list of user UIDs that should be populated from the users list like so:
+
+`profile.contacts` contains a list of user UIDs that should be populated from the users list like so:
+
 ```js
 {
   displayName: 'Rick Sanchez',
@@ -118,9 +171,7 @@ Setting config like this:
 ```js
 const config = {
   userProfile: 'users', // where profiles are stored in database
-  profileParamsToPopulate: [
-    'contacts:users'
-  ]
+  profileParamsToPopulate: ['contacts:users']
 }
 ```
 

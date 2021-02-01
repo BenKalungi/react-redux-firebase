@@ -9,47 +9,25 @@ This example component uses `react-dropzone` to allow for drag/drop uploading di
 ```js
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import { map } from 'lodash'
-import { compose, withHandlers, setPropTypes } from 'recompose'
-import { firebaseConnect } from 'react-redux-firebase'
+import { useSelector } from 'react-redux'
+import { useFirebase, useFirebaseConnect } from 'react-redux-firebase'
 import Dropzone from 'react-dropzone'
 
 // Path within Database for metadata (also used for file Storage path)
 const filesPath = 'uploadedFiles'
 
-const handlers = {
-  // Uploads files and push's objects containing metadata to database at dbPath
-  onFilesDrop: props => files => {
-    // uploadFiles(storagePath, files, dbPath)
-    return props.firebase.uploadFiles(filesPath, files, filesPath)
-  },
-  onFileDelete: props => (file, key) => {
-    // deleteFile(storagePath, dbPath)
-    return props.firebase.deleteFile(file.fullPath, `${filesPath}/${key}`)
+export default function Uploader({ uploadedFiles, onFileDelete, onFilesDrop }) {
+  const firebase = useFirebase()
+  const uploadedFiles = useSelector(({ firebase: { data } }) => data[filesPath])
+
+  function onFilesDrop(files) {
+    return firebase.uploadFiles(filesPath, files, filesPath)
   }
-}
+  function onFileDelete(file, key) {
+    return firebase.deleteFile(file.fullPath, `${filesPath}/${key}`)
+  }
 
-const enhancerPropsTypes = {
-  firebase: PropTypes.object.isRequired
-}
-
-// Component Enhancer that adds props.firebase and creates a listener for
-// files them passes them into props.uploadedFiles
-const enhance = compose(
-  // Create listeners for Real Time Database which write to redux store
-  firebaseConnect([{ path: filesPath }]),
-  // connect redux state to props
-  connect(({ firebase: { data } }) => ({
-    uploadedFiles: data[filesPath]
-  })),
-  // Set proptypes of props used within handlers
-  setPropTypes(enhancerPropsTypes),
-  // Add handlers as props
-  withHandlers(handlers)
-)
-
-function Uploader({ uploadedFiles, onFileDelete, onFilesDrop }) {
   return (
     <div>
       <Dropzone onDrop={onFilesDrop}>
@@ -71,14 +49,6 @@ function Uploader({ uploadedFiles, onFileDelete, onFilesDrop }) {
     </div>
   )
 }
-
-Uploader.propTypes = {
-  firebase: PropTypes.object.isRequired,
-  uploadedFiles: PropTypes.object
-}
-
-// Apply enhancer to component on export
-export default enhance(Uploader)
 ```
 
 ### Include File Metata Data
@@ -106,7 +76,9 @@ When uploading files as in the above example, you can modify how the file's meta
 const config = {
   fileMetadataFactory: (uploadRes, firebase, metadata, downloadURL) => {
     // upload response from Firebase's storage upload
-    const { metadata: { name, fullPath } } = uploadRes
+    const {
+      metadata: { name, fullPath }
+    } = uploadRes
     // default factory includes name, fullPath, downloadURL
     return {
       name,
@@ -115,4 +87,24 @@ const config = {
     }
   }
 }
+```
+
+### Update Firestore Document
+
+If using Firestore for you database and you would like to update a specific document after a file has uploaded you can specify the `options.documentId` property. In this example the document with id `12345` in the `contacts` collection will have the `fileUrl` property updated with the file's download url. More details can be found in the [upload file](https://firebase.google.com/docs/storage/web/upload-files#add_file_metadata) section of the Firebase docs.
+
+```js
+const storagePath = 'contacts/sleepygary'
+const dbPath = 'contacts'
+
+firebase
+  .uploadFile(storagePath, file, dbPath, {
+    metadataFactory: (uploadRes, firebase, metadata, downloadURL) => {
+      return { fileUrl: downloadURL }
+    },
+    documentId: '12345'
+  })
+  .then(() => {
+    console.log('File uploaded successfully')
+  })
 ```
